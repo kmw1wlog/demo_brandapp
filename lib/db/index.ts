@@ -13,3 +13,9 @@ export async function saveLead(payload: unknown) {
   if (inserted.ok) return { ok: true, source: "supabase" };
   return { ok: true, source: "mock", warning: inserted.error };
 }
+
+export async function saveAnalyticsSessionExport(payload: unknown) {
+  const inserted = await insertIntoSupabase("analytics_session_exports", payload);
+  if (inserted.ok) return { ok: true, source: "supabase" };
+  return { ok: true, source: "mock", warning: inserted.error };
+}

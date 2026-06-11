@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -28,6 +28,7 @@ import {
   Utensils
 } from "lucide-react";
 import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
+import { recordAnalyticsEvent, trackScreenView } from "@/lib/analytics/client";
 
 const categories = [
   {
@@ -161,6 +162,12 @@ export function OnboardingLandingClient() {
   const [selectedId, setSelectedId] = useState(categories[0].id);
   const selected = categories.find((category) => category.id === selectedId) ?? categories[0];
 
+  useEffect(() => {
+    trackScreenView("landing_viewed", {
+      default_category: categories[0].id
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-[#121722]">
       <Header />
@@ -244,12 +251,12 @@ function Hero({
             <InfoPill icon={Utensils} text={selected.label} />
           </div>
           <div className="mt-8 grid min-w-0 gap-3 sm:max-w-xl sm:grid-cols-2">
-            <Link href="/dashboard/startup/input" className="flex w-full min-w-0 items-center justify-center gap-3 rounded-md bg-[#ef6f2e] px-5 py-5 text-center text-base font-black leading-6 text-white shadow-[0_16px_30px_rgba(239,111,46,0.24)]">
+            <Link href="/dashboard/startup/input" onClick={() => recordAnalyticsEvent("landing_primary_cta_click", { category: selected.id })} className="flex w-full min-w-0 items-center justify-center gap-3 rounded-md bg-[#ef6f2e] px-5 py-5 text-center text-base font-black leading-6 text-white shadow-[0_16px_30px_rgba(239,111,46,0.24)]">
               <span className="sm:hidden">내 브랜드안 먼저 보기</span>
               <span className="hidden sm:inline">프랜차이즈 상담 전, 내 브랜드안 먼저 보기</span>
               <ArrowRight size={20} />
             </Link>
-            <Link href="/dashboard/startup/franchise" className="flex w-full min-w-0 items-center justify-center rounded-md border border-[#e2d8ca] bg-white px-5 py-5 text-center text-base font-black leading-6 text-[#202735]">
+            <Link href="/dashboard/startup/franchise" onClick={() => recordAnalyticsEvent("landing_compare_cta_click", { category: selected.id })} className="flex w-full min-w-0 items-center justify-center rounded-md border border-[#e2d8ca] bg-white px-5 py-5 text-center text-base font-black leading-6 text-[#202735]">
               프랜차이즈와 비교해보기
             </Link>
           </div>

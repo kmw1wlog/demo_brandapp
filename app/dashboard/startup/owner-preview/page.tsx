@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { Bell, Download, Gift, MessageSquareText, TrendingDown, Users } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OwnerDashboardPreview } from "@/components/branch/OwnerDashboardPreview";
 import { formatKrw, useDemoExperience } from "@/components/branch/DemoExperience";
 import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
+import { ShareActionsCard } from "@/components/branch/ShareActionsCard";
+import { trackScreenView } from "@/lib/analytics/client";
 import { getMergedInfraData } from "@/lib/branch/infra/merge-infra-data";
 import { getRealProfitSimulationsOrFallback, getRealReadiness } from "@/lib/branch/real-data";
 
@@ -14,6 +16,13 @@ export default function OwnerPreviewPage() {
   const { simulation } = useDemoExperience();
   const infra = getMergedInfraData();
   const [showInterestForm, setShowInterestForm] = useState(false);
+
+  useEffect(() => {
+    trackScreenView("owner_dashboard_preview_viewed", {
+      category: simulation.category.display_name,
+      brand_name: simulation.virtualBrand.name
+    });
+  }, []);
 
   return (
     <div className="grid gap-6">
@@ -94,6 +103,16 @@ export default function OwnerPreviewPage() {
             />
           </div>
         ) : null}
+        <div className="mt-5">
+          <ShareActionsCard
+            title="점주 대시보드 미리보기를 공유하세요"
+            description="체험이 끝난 뒤 운영 화면까지 확인했다는 사실 자체가 강한 의도 신호입니다. 이 결과를 동업자나 가족에게 바로 공유할 수 있게 둡니다."
+            shareTitle="브랜치 점주 대시보드 미리보기"
+            shareBody={`${simulation.virtualBrand.name} 기준 운영 대시보드 미리보기입니다. 개점 후 3개월 무료 운영 기능과 공급망/원가 방어 화면까지 확인했습니다.`}
+            pagePath="/dashboard/startup/owner-preview"
+            testId="owner-share-cta"
+          />
+        </div>
       </section>
 
       <OwnerDashboardPreview simulation={getRealProfitSimulationsOrFallback()} readiness={getRealReadiness()} infra={infra} />

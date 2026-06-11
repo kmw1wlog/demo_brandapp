@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, RefreshCw, Sparkles } from "lucide-react";
+import { useEffect } from "react";
 import { BrandSummaryPanel } from "@/components/branch/BrandSummaryPanel";
 import { BusinessBlueprintCard, CategoryChips, RegenerateButton, useDemoExperience } from "@/components/branch/DemoExperience";
+import { trackScreenView } from "@/lib/analytics/client";
 import { getDefaultBrand } from "@/lib/branch/data";
 
 export default function BrandPage() {
   const { input, simulation, patchInput } = useDemoExperience();
   const brand = getDefaultBrand();
+
+  useEffect(() => {
+    trackScreenView("brand_blueprint_viewed", {
+      category: simulation.category.display_name,
+      brand_name: simulation.virtualBrand.name
+    });
+  }, []);
 
   return (
     <div className="grid gap-8">

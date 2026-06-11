@@ -1,11 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { BrandConceptPreview, BusinessBlueprintCard, InputConditionSummary, StartupPlanHero, useDemoExperience } from "@/components/branch/DemoExperience";
 import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
+import { ShareActionsCard } from "@/components/branch/ShareActionsCard";
+import { trackScreenView } from "@/lib/analytics/client";
 import Link from "next/link";
 
 export default function StartupNewPage() {
   const { input, simulation } = useDemoExperience();
+
+  useEffect(() => {
+    trackScreenView("startup_plan_generated", {
+      category: simulation.category.display_name,
+      brand_name: simulation.virtualBrand.name,
+      region: input.region
+    });
+  }, []);
 
   return (
     <div className="grid gap-8">
@@ -29,6 +40,14 @@ export default function StartupNewPage() {
         defaultBenefit="내 창업안 저장 링크"
         category={simulation.category.display_name}
         testId="preview-save-cta"
+      />
+      <ShareActionsCard
+        title="이 창업안을 바로 공유해보세요"
+        description="체험 결과를 혼자 보지 말고 가족, 동업자, 주변 조언자에게 바로 전달해 의견을 모을 수 있게 합니다."
+        shareTitle={`${simulation.category.display_name} 창업안 요약`}
+        shareBody={`${simulation.category.display_name} 기준 브랜드 청사진과 수익 비교 체험 결과입니다. ${simulation.virtualBrand.name} 방향으로 검토 중이며, 다음 단계로 프랜차이즈 비교와 타임테이블을 확인하려고 합니다.`}
+        pagePath="/dashboard/startup/new"
+        testId="preview-share-cta"
       />
       <section className="rounded-[28px] border border-[#eadfce] bg-white p-6 shadow-[0_18px_50px_rgba(61,45,27,0.06)]">
         <h2 className="text-2xl font-black text-[#211f1a]">기존 비교 기능도 보존되어 있습니다.</h2>

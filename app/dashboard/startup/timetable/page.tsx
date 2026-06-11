@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Bell, CalendarDays, Check, ChevronRight, ClipboardList, FileText, Hammer, MapPin, MessageSquareText, PartyPopper, Truck, Users } from "lucide-react";
+import { useEffect } from "react";
 import { BusinessBlueprintCard, ConceptImage, useDemoExperience } from "@/components/branch/DemoExperience";
+import { trackScreenView } from "@/lib/analytics/client";
 import { generateTimetable } from "@/lib/branch/timetable/generate-timetable";
 import { daysUntilOpening, resolveOpeningTargetDate } from "@/lib/branch/user-input";
 
@@ -19,6 +21,14 @@ export default function TimetablePage() {
   const remainingDays = daysUntilOpening(input.opening_target);
   const tasks = generated.tasks.slice(0, 10);
   const doneCount = 2;
+
+  useEffect(() => {
+    trackScreenView("timeline_viewed", {
+      category: simulation.category.display_name,
+      remaining_days: remainingDays,
+      target_date: targetDate
+    });
+  }, []);
 
   return (
     <div className="grid gap-6">

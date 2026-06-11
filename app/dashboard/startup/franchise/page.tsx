@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Download, SlidersHorizontal } from "lucide-react";
 import { formatKrw, useDemoExperience } from "@/components/branch/DemoExperience";
 import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
+import { trackScreenView } from "@/lib/analytics/client";
 import { getRealFranchiseBrands } from "@/lib/branch/real-data";
 import { formatRange } from "@/lib/branch/format";
+import { useEffect } from "react";
 
 const rows = [
   ["초기 자본", "startup"],
@@ -41,6 +43,13 @@ export default function FranchisePage() {
     brand: ["높음", "낮음"],
     support: ["제한적", "높음"]
   };
+
+  useEffect(() => {
+    trackScreenView("franchise_compare_viewed", {
+      category: simulation.category.display_name,
+      own_brand: simulation.virtualBrand.name
+    });
+  }, []);
 
   return (
     <div className="grid gap-6">

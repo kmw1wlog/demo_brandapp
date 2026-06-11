@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { CalendarDays, ChevronDown, Info, MapPin, Settings, Store, Wallet } from "lucide-react";
 import type React from "react";
+import { useEffect } from "react";
 import { BrandConceptPreview, CategoryChips, formatManwon, useDemoExperience } from "@/components/branch/DemoExperience";
+import { recordAnalyticsEvent, trackScreenView } from "@/lib/analytics/client";
 import { getExperienceCategories } from "@/lib/branch/experience-data";
 import { getRegionProfiles } from "@/lib/branch/user-input";
 import type { OpeningTarget } from "@/lib/branch/finance/finance-types";
@@ -20,6 +22,13 @@ const operationTypes = ["점포+배달 혼합형", "점포형", "배달형", "�
 export default function StartupInputPage() {
   const { input, simulation, patchInput } = useDemoExperience();
   const regions = getRegionProfiles().slice(0, 6);
+
+  useEffect(() => {
+    trackScreenView("startup_input_viewed", {
+      category: simulation.category.display_name,
+      region: input.region
+    });
+  }, []);
 
   function setOpeningTarget(target: OpeningTarget) {
     patchInput({ opening_target: target });
@@ -85,6 +94,11 @@ export default function StartupInputPage() {
 
             <Link
               href="/dashboard/startup/brand"
+              onClick={() => recordAnalyticsEvent("startup_plan_generate_click", {
+                category: simulation.category.display_name,
+                region: input.region,
+                budget: input.budget
+              })}
               className="rounded-2xl bg-[#073d2d] px-6 py-5 text-center text-lg font-black text-white shadow-[0_18px_34px_rgba(7,61,45,0.18)]"
             >
               내 브랜드 창업안 생성하기

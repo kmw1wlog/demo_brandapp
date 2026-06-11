@@ -29,6 +29,31 @@ test("cta surfaces route or save leads across landing, preview, and owner pages"
   expect(signups.some((item: { purpose: string }) => item.purpose === "owner_preview_waitlist")).toBeTruthy();
 });
 
+test("share CTA copies link and summary on preview and owner pages", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: baseURL });
+
+  await page.goto(`${baseURL}/dashboard/startup/new`, { waitUntil: "networkidle" });
+  const previewShare = page.getByTestId("preview-share-cta");
+  await expect(previewShare).toBeVisible();
+  await previewShare.getByRole("button", { name: "공유 링크 복사" }).click();
+  await expect(previewShare.getByText("링크 복사 완료")).toBeVisible();
+  const previewLink = await page.evaluate(() => navigator.clipboard.readText());
+  expect(previewLink).toContain("/dashboard/startup/new");
+
+  await previewShare.getByRole("button", { name: "동업자용 요약 복사" }).click();
+  await expect(previewShare.getByText("요약 복사 완료")).toBeVisible();
+  const previewSummary = await page.evaluate(() => navigator.clipboard.readText());
+  expect(previewSummary).toContain("창업안 요약");
+
+  await page.goto(`${baseURL}/dashboard/startup/owner-preview`, { waitUntil: "networkidle" });
+  const ownerShare = page.getByTestId("owner-share-cta");
+  await expect(ownerShare).toBeVisible();
+  await ownerShare.getByRole("button", { name: "공유 링크 복사" }).click();
+  await expect(ownerShare.getByText("링크 복사 완료")).toBeVisible();
+  const ownerLink = await page.evaluate(() => navigator.clipboard.readText());
+  expect(ownerLink).toContain("/dashboard/startup/owner-preview");
+});
+
 test("floating survey opens from bottom-right and stores benefit survey", async ({ page }) => {
   await page.goto(`${baseURL}/dashboard/startup/brand`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "1분 설문하고 혜택 받기" }).click();

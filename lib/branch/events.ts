@@ -1,5 +1,6 @@
 "use client";
 
+import { getAnalyticsSnapshot, recordAnalyticsEvent } from "@/lib/analytics/client";
 import type { BetaSignup, BranchEvent, ConsultationLead, FeedbackEntry } from "./types";
 
 const EVENT_KEY = "branch_events_v2";
@@ -35,6 +36,12 @@ export function trackEvent(eventName: string, metadata: Record<string, unknown> 
     metadata
   };
   writeJson(EVENT_KEY, [...getEvents(), event]);
+  recordAnalyticsEvent(eventName, {
+    ...metadata,
+    page_path: event.page_path,
+    scenario_id: event.scenario_id,
+    selected_brand_id: event.selected_brand_id
+  });
 }
 
 export function getEvents() {
@@ -100,6 +107,7 @@ export function saveOwnerPreviewInterest(value = true) {
 export function exportBetaData() {
   return {
     events: getEvents(),
+    analytics: getAnalyticsSnapshot(),
     consultationLeads: getConsultationLeads(),
     feedback: getFeedback(),
     betaSignups: getBetaSignups(),
