@@ -63,3 +63,20 @@ export async function saveAnalyticsSessionExport(payload: unknown) {
   if (fallback.ok) return { ok: true, source: "supabase" };
   return { ok: true, source: "mock", warning: `${inserted.ok ? "" : inserted.error} / ${fallback.error}` };
 }
+
+export async function saveFeedbackEntry(payload: unknown) {
+  const input = (payload ?? {}) as Record<string, unknown>;
+  const inserted = await insertIntoSupabase("branch_feedback_entries", {
+    id: crypto.randomUUID(),
+    stage: String(input.stage ?? ""),
+    blocker: String(input.blocker ?? ""),
+    feature: String(input.feature ?? ""),
+    consultation: Boolean(input.consultation),
+    contact: String(input.contact ?? ""),
+    payload: input,
+    created_at: input.created_at ?? new Date().toISOString()
+  });
+
+  if (inserted.ok) return { ok: true, source: "supabase" };
+  return { ok: true, source: "mock", warning: inserted.error };
+}

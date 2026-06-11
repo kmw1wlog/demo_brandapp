@@ -31,6 +31,14 @@ test("cta surfaces route or save leads across landing, preview, and owner pages"
   expect(signups.some((item: { purpose: string }) => item.purpose === "owner_preview_waitlist")).toBeTruthy();
 });
 
+test("owner dashboard reservation button opens the waitlist form", async ({ page }) => {
+  await page.goto(`${baseURL}/dashboard/startup/owner-preview`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "점주 전환 예약" }).click();
+  const waitlist = page.getByTestId("owner-waitlist");
+  await expect(waitlist).toBeVisible();
+  await expect(waitlist.getByRole("button", { name: "우선 연락 신청" })).toBeVisible();
+});
+
 test("waitlist CTA persists a lead into staging Supabase", async ({ page, request }) => {
   test.skip(!supabaseUrl || !supabaseSecret, "supabase env required");
 
@@ -103,4 +111,34 @@ test("floating survey opens from bottom-right and stores benefit survey", async 
   const feedback = await page.evaluate(() => JSON.parse(window.localStorage.getItem("branch_feedback_v2") ?? "[]"));
   expect(feedback.length).toBeGreaterThan(0);
   expect(feedback[feedback.length - 1].desiredBenefit).toBe("상담 질문지 템플릿");
+});
+
+test("floating survey persists feedback into staging Supabase", async ({ page, request }) => {
+  test.skip(!supabaseUrl || !supabaseSecret, "supabase env required");
+
+  const uniqueContact = `survey-${Date.now()}@example.com`;
+  await page.goto(`${baseURL}/dashboard/startup/brand`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "1분 설문하고 혜택 받기" }).click();
+  await page.getByLabel("현재 창업 단계").selectOption("예산 계산 중");
+  await page.getByLabel("지금 가장 막히는 부분").selectOption("입지/상권 판단");
+  await page.getByLabel("언제쯤 개점하고 싶나요?").selectOption("3개월 내");
+  await page.getByLabel("현재 예상 자본은?").selectOption("5천만~1억 원");
+  await page.getByLabel("어떤 혜택을 먼저 받고 싶나요?").selectOption("상담 질문지 템플릿");
+  await page.getByLabel("이메일 또는 전화번호").fill(uniqueContact);
+  await page.getByLabel("한 줄 메모").fill("staging remote feedback save");
+  await page.getByRole("button", { name: "설문 보내기" }).click();
+  await expect(page.getByText("저장 경로: Supabase")).toBeVisible();
+
+  const response = await request.get(
+    `${supabaseUrl}/rest/v1/branch_feedback_entries?select=id,contact,feature&contact=eq.${encodeURIComponent(uniqueContact)}`,
+    {
+      headers: {
+        apikey: supabaseSecret,
+        Authorization: `Bearer ${supabaseSecret}`
+      }
+    }
+  );
+  expect(response.ok()).toBeTruthy();
+  const rows = await response.json();
+  expect(rows.some((row: { contact: string; feature: string }) => row.contact === uniqueContact && row.feature === "상담 질문지 템플릿")).toBeTruthy();
 });

@@ -24,6 +24,23 @@ export default function OwnerPreviewPage() {
     });
   }, []);
 
+  useEffect(() => {
+    const openWaitlist = () => {
+      setShowInterestForm(true);
+      window.setTimeout(() => {
+        document.getElementById("owner-waitlist")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    };
+
+    if (window.location.hash === "#owner-waitlist") openWaitlist();
+    window.addEventListener("branch-open-owner-waitlist", openWaitlist);
+    window.addEventListener("hashchange", openWaitlist);
+    return () => {
+      window.removeEventListener("branch-open-owner-waitlist", openWaitlist);
+      window.removeEventListener("hashchange", openWaitlist);
+    };
+  }, []);
+
   return (
     <div className="grid gap-6">
       <header className="rounded-[32px] border border-[#e4dacb] bg-white p-6 text-center shadow-[0_18px_50px_rgba(61,45,27,0.06)]">

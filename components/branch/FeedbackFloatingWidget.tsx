@@ -14,21 +14,59 @@ export function FeedbackFloatingWidget() {
   const benefitOptions = copy.fields.find((field: { id: string }) => field.id === "desiredBenefit")?.options ?? [];
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveSource, setSaveSource] = useState<"supabase" | "mock" | "local">("local");
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const stage = String(form.get("stage") ?? "");
+    const blocker = String(form.get("blocker") ?? "");
+    const openTimeline = String(form.get("openTimeline") ?? "");
+    const budgetRange = String(form.get("budgetRange") ?? "");
+    const desiredBenefit = String(form.get("desiredBenefit") ?? "");
+    const consultation = form.get("consultation") === "on";
+    const contact = String(form.get("contact") ?? "");
+    const note = String(form.get("note") ?? "");
+
     saveFeedback({
-      stage: String(form.get("stage") ?? ""),
-      blocker: String(form.get("blocker") ?? ""),
-      openTimeline: String(form.get("openTimeline") ?? ""),
-      budgetRange: String(form.get("budgetRange") ?? ""),
-      desiredBenefit: String(form.get("desiredBenefit") ?? ""),
-      consultation: form.get("consultation") === "on",
-      contact: String(form.get("contact") ?? ""),
-      note: String(form.get("note") ?? "")
+      stage,
+      blocker,
+      openTimeline,
+      budgetRange,
+      desiredBenefit,
+      consultation,
+      contact,
+      note
     });
     trackEvent("feedback_submit");
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stage,
+          blocker,
+          feature: desiredBenefit,
+          consultation,
+          contact,
+          payload: {
+            stage,
+            blocker,
+            openTimeline,
+            budgetRange,
+            desiredBenefit,
+            consultation,
+            contact,
+            note,
+            pagePath: window.location.pathname + window.location.search
+          }
+        })
+      });
+      const result = await response.json();
+      setSaveSource(result.source === "supabase" ? "supabase" : "mock");
+    } catch {
+      setSaveSource("local");
+    }
     setSaved(true);
   }
 
@@ -102,6 +140,7 @@ export function FeedbackFloatingWidget() {
                 <button className="rounded-lg bg-[#164033] px-4 py-3 font-black text-white">설문 보내기</button>
               </form>
             )}
+            {saved ? <p className="mt-3 text-xs font-black text-[#5f6b63]">저장 경로: {saveSource === "supabase" ? "Supabase" : saveSource === "mock" ? "Mock fallback" : "Local only"}</p> : null}
           </div>
         </div>
       ) : null}

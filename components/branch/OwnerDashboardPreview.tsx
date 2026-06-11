@@ -21,6 +21,9 @@ export function OwnerDashboardPreview({ simulation, readiness, infra }: { simula
   function save() {
     saveOwnerPreviewInterest(true);
     trackEvent("owner_preview_click");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("branch-open-owner-waitlist"));
+    }
   }
 
   useEffect(() => {
