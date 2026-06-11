@@ -27,6 +27,7 @@ import {
   Truck,
   Utensils
 } from "lucide-react";
+import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
 
 const categories = [
   {
@@ -199,7 +200,7 @@ function Header() {
             로그인
           </Link>
           <Link href="/dashboard/startup/input" className="rounded-md bg-[#0b9b62] px-5 py-3 text-sm font-black text-white shadow-[0_10px_20px_rgba(11,155,98,0.18)]">
-            무료로 시작하기
+            내 조건으로 창업안 보기
           </Link>
         </div>
       </div>
@@ -252,6 +253,7 @@ function Hero({
               프랜차이즈와 비교해보기
             </Link>
           </div>
+          <p className="mt-4 text-sm font-black text-[#0b9b62]">이메일 없이 먼저 체험 가능</p>
           <div className="mt-auto hidden grid-cols-3 gap-8 pt-16 text-center lg:grid">
             <HeroStat value="10,000+" label="조건별 창업안 제공" />
             <HeroStat value="3분" label="맞춤 창업안 완성" />
@@ -768,6 +770,19 @@ function FinalCta() {
           <DarkBenefit icon={CalendarDays} title="시간과 비용 절약" body="여러 곳 상담 없이 한 번에 비교" />
           <DarkBenefit icon={BarChart3} title="데이터 기반 의사결정" body="객관적인 수치로 확실하게" />
           <DarkBenefit icon={ShieldCheck} title="실패 확률 최소화" body="검증된 정보로 안전하게 시작" />
+        </div>
+        <div className="mx-auto mt-10 max-w-4xl text-left">
+          <InlineWaitlistCta
+            title="사전오픈 혜택을 먼저 받아보세요"
+            description="체험 리포트 저장, 상담 오픈 알림, 점주 대시보드 3개월 무료 안내 중 가장 필요한 혜택을 먼저 보내드립니다."
+            purpose="landing_waitlist"
+            submitLabel="사전오픈 혜택 받기"
+            benefits={["내 창업안 저장 기능 우선 안내", "상담 오픈 시 우선 연락", "대시보드 3개월 무료 알림"]}
+            defaultBenefit="내 창업안 저장 기능 우선 안내"
+            theme="dark"
+            compact
+            testId="landing-waitlist"
+          />
         </div>
         <Link href="/dashboard/startup/input" className="mt-12 inline-flex items-center gap-3 rounded-md bg-[#0f67d8] px-8 py-5 text-lg font-black text-white">
           내 브랜드 만들고 창업 준비하기

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Download, SlidersHorizontal } from "lucide-react";
 import { formatKrw, useDemoExperience } from "@/components/branch/DemoExperience";
+import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
 import { getRealFranchiseBrands } from "@/lib/branch/real-data";
 import { formatRange } from "@/lib/branch/format";
 
@@ -88,6 +89,17 @@ export default function FranchisePage() {
       <p className="rounded-2xl border border-[#f1dfb9] bg-[#fff8e8] p-4 text-sm font-bold leading-6 text-[#7d5a1d]">
         본 시뮬레이션은 입력한 가정과 시장 데이터를 기반으로 산출된 예측치입니다. 프랜차이즈가 항상 불리한 것은 아니며, 업종과 점주의 경험에 따라 더 나은 선택일 수 있습니다.
       </p>
+
+      <InlineWaitlistCta
+        title="비교 결과를 저장하고 더 구체적인 비교안을 받아보세요"
+        description="업종별 직접 비교군이 늘어나거나 PDF 저장 기능이 열리면 가장 먼저 알려드립니다."
+        purpose="franchise_compare_waitlist"
+        submitLabel="비교 결과 업데이트 받기"
+        benefits={["내 브랜드 vs 프랜차이즈 PDF", "동종 브랜드 비교 업데이트", "상담 전 체크리스트 받기"]}
+        defaultBenefit="내 브랜드 vs 프랜차이즈 PDF"
+        category={simulation.category.display_name}
+        testId="franchise-waitlist"
+      />
 
       <details className="rounded-[28px] border border-[#d7e7df] bg-white p-6">
         <summary className="cursor-pointer text-xl font-black text-[#172033]">수집된 프랜차이즈 브랜드 상세 보기</summary>

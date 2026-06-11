@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { Bell, Download, Gift, MessageSquareText, TrendingDown, Users } from "lucide-react";
 import type React from "react";
+import { useState } from "react";
 import { OwnerDashboardPreview } from "@/components/branch/OwnerDashboardPreview";
 import { formatKrw, useDemoExperience } from "@/components/branch/DemoExperience";
+import { InlineWaitlistCta } from "@/components/branch/InlineWaitlistCta";
 import { getMergedInfraData } from "@/lib/branch/infra/merge-infra-data";
 import { getRealProfitSimulationsOrFallback, getRealReadiness } from "@/lib/branch/real-data";
 
 export default function OwnerPreviewPage() {
   const { simulation } = useDemoExperience();
   const infra = getMergedInfraData();
+  const [showInterestForm, setShowInterestForm] = useState(false);
 
   return (
     <div className="grid gap-6">
@@ -74,9 +77,23 @@ export default function OwnerPreviewPage() {
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <button type="button" className="rounded-2xl border border-[#172033] bg-white px-6 py-4 text-sm font-black text-[#172033]"><Download className="mr-2 inline" size={16} /> 리포트 저장하기</button>
-          <button type="button" className="rounded-2xl bg-[#0f7b54] px-6 py-4 text-sm font-black text-white">상담사 입점 시 연락받기</button>
+          <button type="button" onClick={() => setShowInterestForm((current) => !current)} className="rounded-2xl bg-[#0f7b54] px-6 py-4 text-sm font-black text-white">상담사 입점 시 연락받기</button>
           <Link href="/dashboard/startup/owner-conversion" className="rounded-2xl bg-[#172033] px-6 py-4 text-center text-sm font-black text-white">점주 대시보드 미리보기 →</Link>
         </div>
+        {showInterestForm ? (
+          <div id="owner-waitlist" className="mt-5">
+            <InlineWaitlistCta
+              title="상담 오픈과 점주 대시보드 혜택을 먼저 받아보세요"
+              description="상담사 입점이 시작되면 우선 예약 링크와 점주 대시보드 3개월 무료 안내를 먼저 보내드립니다."
+              purpose="owner_preview_waitlist"
+              submitLabel="우선 연락 신청"
+              benefits={["상담 오픈 시 우선 예약 링크", "점주 대시보드 3개월 무료 안내", "운영 리포트 저장 기능 안내"]}
+              defaultBenefit="상담 오픈 시 우선 예약 링크"
+              category={simulation.category.display_name}
+              testId="owner-waitlist"
+            />
+          </div>
+        ) : null}
       </section>
 
       <OwnerDashboardPreview simulation={getRealProfitSimulationsOrFallback()} readiness={getRealReadiness()} infra={infra} />
