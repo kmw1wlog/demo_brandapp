@@ -18,7 +18,10 @@ export async function insertIntoSupabase(table: string, payload: unknown): Promi
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) return { ok: false, error: `supabase insert failed: ${response.status}` };
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      return { ok: false, error: `supabase insert failed: ${response.status}${detail ? ` ${detail}` : ""}` };
+    }
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "supabase insert failed" };

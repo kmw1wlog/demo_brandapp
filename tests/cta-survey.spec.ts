@@ -1,6 +1,8 @@
 import { expect, test } from "playwright/test";
 
 const baseURL = process.env.BASE_URL ?? "http://localhost:3003";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/rest\/v1\/?$/, "") ?? "";
+const supabaseSecret = process.env.SUPABASE_SECRET_KEY ?? "";
 
 test("cta surfaces route or save leads across landing, preview, and owner pages", async ({ page }) => {
   await page.goto(`${baseURL}/onboarding`, { waitUntil: "networkidle" });
@@ -27,6 +29,34 @@ test("cta surfaces route or save leads across landing, preview, and owner pages"
   expect(signups.length).toBeGreaterThanOrEqual(2);
   expect(signups.some((item: { purpose: string }) => item.purpose === "startup_preview_save")).toBeTruthy();
   expect(signups.some((item: { purpose: string }) => item.purpose === "owner_preview_waitlist")).toBeTruthy();
+});
+
+test("waitlist CTA persists a lead into staging Supabase", async ({ page, request }) => {
+  test.skip(!supabaseUrl || !supabaseSecret, "supabase env required");
+
+  const uniqueEmail = `preview-${Date.now()}@example.com`;
+  const uniquePhone = `010-${String(Date.now()).slice(-8, -4)}-${String(Date.now()).slice(-4)}`;
+
+  await page.goto(`${baseURL}/dashboard/startup/new`, { waitUntil: "networkidle" });
+  const previewCta = page.getByTestId("preview-save-cta");
+  await previewCta.getByLabel("이메일").fill(uniqueEmail);
+  await previewCta.getByLabel("전화번호").fill(uniquePhone);
+  await previewCta.getByRole("button", { name: "저장하고 이어보기" }).click();
+  await expect(previewCta.getByText("저장 완료")).toBeVisible();
+  await expect(previewCta.getByText("저장 경로: Supabase")).toBeVisible();
+
+  const response = await request.get(
+    `${supabaseUrl}/rest/v1/leads?select=id,name,phone&name=eq.${encodeURIComponent(uniqueEmail)}`,
+    {
+      headers: {
+        apikey: supabaseSecret,
+        Authorization: `Bearer ${supabaseSecret}`
+      }
+    }
+  );
+  expect(response.ok()).toBeTruthy();
+  const rows = await response.json();
+  expect(rows.some((row: { name: string; phone: string }) => row.name === uniqueEmail && row.phone === uniquePhone)).toBeTruthy();
 });
 
 test("share CTA copies link and summary on preview and owner pages", async ({ page, context }) => {

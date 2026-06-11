@@ -38,20 +38,56 @@ export function InlineWaitlistCta({
   testId
 }: InlineWaitlistCtaProps) {
   const [saved, setSaved] = useState(false);
+  const [saveSource, setSaveSource] = useState<"supabase" | "mock" | "local">("local");
+  const [saving, setSaving] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "");
+    const phone = String(form.get("phone") ?? "");
+    const benefit = String(form.get("benefit") ?? defaultBenefit ?? benefits[0] ?? "");
+    const note = String(form.get("note") ?? "");
+
     saveBetaSignup({
-      email: String(form.get("email") ?? ""),
-      phone: String(form.get("phone") ?? ""),
+      email,
+      phone,
       purpose,
-      benefit: String(form.get("benefit") ?? defaultBenefit ?? benefits[0] ?? ""),
+      benefit,
       category,
       openDate,
-      note: String(form.get("note") ?? "")
+      note
     });
     trackEvent(eventName, { purpose, category, openDate });
+    setSaving(true);
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: email,
+          phone,
+          category: category ?? purpose,
+          region: window.location.pathname,
+          budget: openDate ?? "",
+          notes: note,
+          payload: {
+            email,
+            benefit,
+            purpose,
+            category,
+            openDate,
+            pagePath: window.location.pathname + window.location.search
+          }
+        })
+      });
+      const result = await response.json();
+      setSaveSource(result.source === "supabase" ? "supabase" : "mock");
+    } catch {
+      setSaveSource("local");
+    } finally {
+      setSaving(false);
+    }
     setSaved(true);
   }
 
@@ -95,6 +131,9 @@ export function InlineWaitlistCta({
               저장 완료
             </p>
             <p className="mt-2">{successMessage}</p>
+            <p className="mt-2 text-xs font-black">
+              저장 경로: {saveSource === "supabase" ? "Supabase" : saveSource === "mock" ? "Mock fallback" : "Local only"}
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="grid gap-3">
@@ -129,7 +168,7 @@ export function InlineWaitlistCta({
               <textarea aria-label="메모" name="note" placeholder={notePlaceholder} className={`min-h-24 rounded-2xl px-4 py-3 text-sm font-bold outline-none ${inputClass}`} />
             </label>
             <button type="submit" className={`rounded-2xl px-5 py-4 text-sm font-black ${theme === "dark" ? "bg-[#0f67d8] text-white" : "bg-[#073d2d] text-white"}`}>
-              {submitLabel}
+              {saving ? "저장 중..." : submitLabel}
             </button>
           </form>
         )}
