@@ -80,3 +80,37 @@ export async function saveFeedbackEntry(payload: unknown) {
   if (inserted.ok) return { ok: true, source: "supabase" };
   return { ok: true, source: "mock", warning: inserted.error };
 }
+
+export async function saveShareEvent(payload: unknown) {
+  const input = (payload ?? {}) as Record<string, unknown>;
+  const createdAt = input.created_at ?? new Date().toISOString();
+  const directInsert = await insertIntoSupabase("share_events", {
+    id: crypto.randomUUID(),
+    session_id: String(input.session_id ?? ""),
+    event_name: String(input.event_name ?? ""),
+    share_type: String(input.share_type ?? ""),
+    page_path: String(input.page_path ?? ""),
+    category: String(input.category ?? ""),
+    brand_name: String(input.brand_name ?? ""),
+    payload: input,
+    created_at: createdAt
+  });
+  if (directInsert.ok) return { ok: true, source: "supabase" };
+
+  const fallback = await insertIntoSupabase("branch_user_inputs", {
+    id: crypto.randomUUID(),
+    session_id: String(input.session_id ?? crypto.randomUUID()),
+    category: String(input.category ?? ""),
+    region: String(input.page_path ?? ""),
+    budget: null,
+    payload: {
+      kind: "share_event",
+      ...input,
+      fallback_reason: "share_events_missing"
+    },
+    created_at: createdAt,
+    updated_at: new Date().toISOString()
+  });
+  if (fallback.ok) return { ok: true, source: "supabase" };
+  return { ok: true, source: "mock", warning: `${directInsert.error} / ${fallback.error}` };
+}

@@ -92,6 +92,44 @@ test("share CTA copies link and summary on preview and owner pages", async ({ pa
   expect(ownerLink).toContain("/dashboard/startup/owner-preview");
 });
 
+test("share CTA persists individual share rows into Supabase", async ({ page, context, request }) => {
+  test.skip(!supabaseUrl || !supabaseSecret, "supabase env required");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: baseURL });
+
+  await page.goto(`${baseURL}/dashboard/startup/new`, { waitUntil: "networkidle" });
+  const previewShare = page.getByTestId("preview-share-cta");
+  await expect(previewShare).toBeVisible();
+
+  const sessionId = await page.evaluate(() => {
+    const session = JSON.parse(window.localStorage.getItem("branch_analytics_session_v1") ?? "null");
+    return session?.sessionId ?? "";
+  });
+  expect(sessionId).not.toBe("");
+
+  await previewShare.getByRole("button", { name: "공유 링크 복사" }).click();
+  await expect(previewShare.getByText("공유 이벤트 저장 경로: Supabase")).toBeVisible();
+
+  const response = await request.get(
+    `${supabaseUrl}/rest/v1/branch_user_inputs?select=id,session_id,payload&session_id=eq.${sessionId}&order=created_at.desc&limit=10`,
+    {
+      headers: {
+        apikey: supabaseSecret,
+        Authorization: `Bearer ${supabaseSecret}`
+      }
+    }
+  );
+  expect(response.ok()).toBeTruthy();
+  const rows = await response.json();
+  expect(
+    rows.some(
+      (row: { payload?: { kind?: string; event_name?: string; share_type?: string } }) =>
+        row.payload?.kind === "share_event" &&
+        row.payload?.event_name === "share_cta_clicked" &&
+        row.payload?.share_type === "link"
+    )
+  ).toBeTruthy();
+});
+
 test("floating survey opens from bottom-right and stores benefit survey", async ({ page }) => {
   await page.goto(`${baseURL}/dashboard/startup/brand`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "1분 설문하고 혜택 받기" }).click();

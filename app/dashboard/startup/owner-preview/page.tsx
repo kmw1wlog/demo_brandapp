@@ -101,6 +101,20 @@ export default function OwnerPreviewPage() {
 
         <p className="mt-5 rounded-2xl bg-[#e7f4ed] p-4 text-center text-sm font-black text-[#0f7b54]">대시보드는 오픈 후 즉시 이용 가능하며, 3개월간 모든 기능을 무료로 이용할 수 있습니다.</p>
 
+        <div className="mt-5">
+          <ShareActionsCard
+            title="운영 대시보드 미리보기를 지금 공유하세요"
+            description="체험 완료 직후 공유가 가장 잘 됩니다. 동업자, 가족, 투자 검토자에게 운영 화면까지 봤다는 점을 바로 전달할 수 있습니다."
+            shareTitle="브랜치 점주 대시보드 미리보기"
+            shareBody={`${simulation.virtualBrand.name} 기준 운영 대시보드 미리보기입니다. 개점 후 3개월 무료 운영 기능과 공급망/원가 방어 화면까지 확인했습니다.`}
+            pagePath="/dashboard/startup/owner-preview"
+            testId="owner-share-cta"
+            category={simulation.category.display_name}
+            brandName={simulation.virtualBrand.name}
+            highlight
+          />
+        </div>
+
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <button type="button" className="rounded-2xl border border-[#172033] bg-white px-6 py-4 text-sm font-black text-[#172033]"><Download className="mr-2 inline" size={16} /> 리포트 저장하기</button>
           <button type="button" onClick={() => setShowInterestForm((current) => !current)} className="rounded-2xl bg-[#0f7b54] px-6 py-4 text-sm font-black text-white">상담사 입점 시 연락받기</button>
@@ -120,16 +134,6 @@ export default function OwnerPreviewPage() {
             />
           </div>
         ) : null}
-        <div className="mt-5">
-          <ShareActionsCard
-            title="점주 대시보드 미리보기를 공유하세요"
-            description="체험이 끝난 뒤 운영 화면까지 확인했다는 사실 자체가 강한 의도 신호입니다. 이 결과를 동업자나 가족에게 바로 공유할 수 있게 둡니다."
-            shareTitle="브랜치 점주 대시보드 미리보기"
-            shareBody={`${simulation.virtualBrand.name} 기준 운영 대시보드 미리보기입니다. 개점 후 3개월 무료 운영 기능과 공급망/원가 방어 화면까지 확인했습니다.`}
-            pagePath="/dashboard/startup/owner-preview"
-            testId="owner-share-cta"
-          />
-        </div>
       </section>
 
       <OwnerDashboardPreview simulation={getRealProfitSimulationsOrFallback()} readiness={getRealReadiness()} infra={infra} />
